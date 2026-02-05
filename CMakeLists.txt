@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
 project(FlashMob LANGUAGES CXX)
 
+# ===============================
+# C++ STANDARD
+# ===============================
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/third_party/graphvite/cmake)
 
 # add externals
@@ -13,49 +20,49 @@ else()
     set(SKIP_UPDATE FALSE)
 endif()
 
-# import glog
+# import externals
 include(cmake/glog.cmake)
-
-# import gflags
 include(cmake/gflags.cmake)
-
-# import args
 include(cmake/args.cmake)
-
-# import gtest
 include(cmake/gtest.cmake)
 
 # enable ctest
 include(cmake/test.cmake)
 
+# ===============================
+# OpenMP
+# ===============================
 find_package(OpenMP REQUIRED)
-if(OPENMP_FOUND)
+if (OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-# compilation flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-maybe-uninitialized -mclflushopt")
+# ===============================
+# Compilation flags (NO -std HERE)
+# ===============================
+set(CMAKE_CXX_FLAGS
+    "${CMAKE_CXX_FLAGS} -Wall -Wno-maybe-uninitialized -mclflushopt"
+)
 
-# e.g. -DPROFILE=ALL | DETAIL | NORMAL | BRIEF (default)
-# BRIEF: limited log, minimal impact on performance
-# NORMAL: statistical log, some impact on performance
-# DETAIL: per-step log, some impact on performance
-# ALL: per-step, per-partition log, large impact on performance
+# ===============================
+# Profiling flags
+# ===============================
 if (PROFILE)
     if (PROFILE STREQUAL "ALL")
-        SET(PROFILE_LEVEL PROFILE_ALL)
+        set(PROFILE_LEVEL PROFILE_ALL)
     elseif (PROFILE STREQUAL "DETAIL")
-        SET(PROFILE_LEVEL PROFILE_DETAIL)
+        set(PROFILE_LEVEL PROFILE_DETAIL)
     elseif (PROFILE STREQUAL "NORMAL")
-        SET(PROFILE_LEVEL PROFILE_NORMAL)
+        set(PROFILE_LEVEL PROFILE_NORMAL)
     else ()
-        SET(PROFILE_LEVEL PROFILE_BRIEF)
+        set(PROFILE_LEVEL PROFILE_BRIEF)
     endif()
 else ()
-    SET(PROFILE_LEVEL PROFILE_BRIEF)
+    set(PROFILE_LEVEL PROFILE_BRIEF)
 endif()
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPROFILE_LEVEL=${PROFILE_LEVEL}")
 
 if (PROFILE_BF)
@@ -69,24 +76,40 @@ elseif (ENABLE_VTUNE)
 endif()
 
 message("Top level CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message("CMAKE_CXX_STANDARD: ${CMAKE_CXX_STANDARD}")
 
-# output directory
+# ===============================
+# Output directories
+# ===============================
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
-# project directories
+# ===============================
+# Include paths
+# ===============================
 include_directories(include)
 include_directories(third_party)
 
+# ===============================
+# Executable helper
+# ===============================
 function(add_exec EXEC_NAME)
     add_executable(${EXEC_NAME} ${EXEC_NAME}.cpp)
-    # dynamic link
-    target_link_libraries(${EXEC_NAME} PUBLIC ${OpenMP_CXX_LIBRARIES} ${GTEST_LIBRARIES} glog numa)
-    # static link glog and gflags (must also link unwind)
-    # target_link_libraries(${EXEC_NAME} PUBLIC ${OpenMP_CXX_LIBRARIES} ${GTEST_LIBRARIES} glog.a numa.a gflags.a unwind)
-    add_dependencies(${EXEC_NAME} external-args external-gtest ${glog_dependency} ${gflag_dependency})
-endfunction(add_exec)
+    target_link_libraries(${EXEC_NAME}
+        PUBLIC
+        ${OpenMP_CXX_LIBRARIES}
+        ${GTEST_LIBRARIES}
+        glog
+        numa
+    )
+    add_dependencies(${EXEC_NAME}
+        external-args
+        external-gtest
+        ${glog_dependency}
+        ${gflag_dependency}
+    )
+endfunction()
 
 add_subdirectory(src)
 
