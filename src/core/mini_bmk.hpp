@@ -4,6 +4,7 @@
 #include <sstream>
 #include <map>
 #include <set>
+#include <iomanip>
 
 #include "timer.hpp"
 #include "io.hpp"
