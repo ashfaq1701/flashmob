@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include <limits>
+#include <array>
 
 #include "boost/thread.hpp"
 
