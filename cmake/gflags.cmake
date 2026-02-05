@@ -4,6 +4,7 @@ if (NOT GFLAGS_FOUND)
     message(WARNING "Can't find gflags library. It will be installed from git repository.")
     ExternalProject_Add(external-gflags
             GIT_REPOSITORY      https://github.com/gflags/gflags
+            GIT_TAG             main
             UPDATE_DISCONNECTED ${SKIP_UPDATE}
             PREFIX              gflags
             SOURCE_DIR          ${EXTERNAL_DIR}/gflags
