@@ -125,6 +125,7 @@ Use "--help" or "-h" to check all parameters of the programs.
       -e[epoch]                         walk epoch number
       -w[walker]                        walker number
       -l[length]                        walk length
+      --dump-walks=[dump-walks]         [optional] dump generated walks to this file
 ```
 
 The parameters of DeepWalk can be categorized into 3 types.
@@ -141,11 +142,12 @@ In default, #threads is set to be #physical-cores, distributed on all sockets, a
 One and only one of "-e" and "-w" must be used to specify how many walkers there are.
 "-e" tells that there are #epoch times |V| walkers.
 "-w" tells that there are #walker walkers.
+"--dump-walks" writes each generated walk to a line in the specified file, with vertices separated by spaces.
 
 Example usage:
 
 ```bash
-./bin/deepwalk -f text -g ./dataset/youtube.txt -e 10 -l 80
+./bin/deepwalk -f text -g ./dataset/youtube.txt -e 10 -l 80 --dump-walks ./output/youtube.deepwalk.walks.txt
 ```
 
 ### node2vec
@@ -170,6 +172,7 @@ Example usage:
       -l[length]                        walk length
       -p[p]                             node2vec parameter p
       -q[q]                             node2vec parameter q
+      --dump-walks=[dump-walks]         [optional] dump generated walks to this file
 ```
 
 There are 2 additional parameters for node2vec walk compared with DeepWalk, i.e. "-p" and "-q".
@@ -178,7 +181,7 @@ They are the hyper-parameters used in node2vec, called return parameter and in-o
 Example usage:
 
 ```bash
-./bin/node2vec -f text -g ./dataset/youtube.txt -e 10 -l 80 -p 2 -q 0.5
+./bin/node2vec -f text -g ./dataset/youtube.txt -e 10 -l 80 -p 2 -q 0.5 --dump-walks ./output/youtube.node2vec.walks.txt
 ```
 
 ## Publication

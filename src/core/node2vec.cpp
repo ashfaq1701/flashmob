@@ -19,6 +19,6 @@ int main(int argc, char** argv)
 
     FMobSolver solver(&graph, opt.mtcfg);
     solver.set_node2vec(opt.p, opt.q);
-    walk(&solver, opt.get_walker_num(graph.v_num), opt.walk_len, opt.mem_quota);
+    walk(&solver, opt.get_walker_num(graph.v_num), opt.walk_len, opt.mem_quota, opt.dump_walks_path);
     return 0;
 }

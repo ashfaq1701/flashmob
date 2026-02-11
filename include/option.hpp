@@ -229,14 +229,17 @@ private:
     args::ValueFlag<int> epoch_num_flag;
     args::ValueFlag<uint64_t> walker_num_flag;
     args::ValueFlag<int> walk_len_flag;
+    args::ValueFlag<std::string> dump_walks_flag;
 public:
     int epoch_num;
     uint64_t walker_num;
     int walk_len;
+    std::string dump_walks_path;
     WalkOptionHelper(args::ArgumentParser &parser):
         epoch_num_flag(parser, "epoch", "walk epoch number", {'e'}),
         walker_num_flag(parser, "walker", "walker number", {'w'}),
-        walk_len_flag(parser, "length", "walk length", {'l'})
+        walk_len_flag(parser, "length", "walk length", {'l'}),
+        dump_walks_flag(parser, "dump-walks", "[optional] dump generated walks to this file", {"dump-walks"})
     {
     }
     virtual void parse() {
@@ -258,6 +261,13 @@ public:
         CHECK(walk_len_flag);
         walk_len = args::get(walk_len_flag);
         LOG(WARNING) << block_mid_str() << "Walk length: " << walk_len;
+
+        if (dump_walks_flag) {
+            dump_walks_path = args::get(dump_walks_flag);
+            LOG(WARNING) << block_mid_str() << "Dump walks to: " << dump_walks_path;
+        } else {
+            dump_walks_path = "";
+        }
     }
 
     uint64_t get_walker_num(vertex_id_t vertex_num) {
