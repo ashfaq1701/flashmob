@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <fstream>
 #include <iomanip>
 #include <map>
 
@@ -350,22 +351,47 @@ public:
     }
 };
 
-void walk(FMobSolver * solver, uint64_t walker_num, int walk_len, uint64_t mem_quota) {
+void walk(FMobSolver * solver, uint64_t walker_num, int walk_len, uint64_t mem_quota, const std::string& dump_walks_path = "") {
     LOG(WARNING) << split_line_string();
 
     solver->prepare(walker_num, walk_len, mem_quota);
     // LOG(WARNING) << "Sampler: " << solver->name();
     vertex_id_t *walks = solver->alloc_output_array();
 
+    std::unique_ptr<std::ofstream> walk_dump_file;
+    if (!dump_walks_path.empty()) {
+        walk_dump_file = std::make_unique<std::ofstream>(dump_walks_path);
+        CHECK(walk_dump_file->is_open()) << "Cannot open walk dump file: " << dump_walks_path;
+    }
+
     System::profile("sample", [&]() {
         uint64_t terminated_walker_num = 0;
         while (solver->has_next_walk()) {
             walker_id_t epoch_walker_num;
             solver->walk(walks, epoch_walker_num);
+
+            if (walk_dump_file) {
+                for (walker_id_t w_i = 0; w_i < epoch_walker_num; w_i++) {
+                    for (int step_i = 0; step_i < walk_len; step_i++) {
+                        if (step_i != 0) {
+                            (*walk_dump_file) << ' ';
+                        }
+                        (*walk_dump_file) << walks[(uint64_t) w_i * walk_len + step_i];
+                    }
+                    (*walk_dump_file) << '\n';
+                }
+            }
+
             terminated_walker_num += epoch_walker_num;
         }
         CHECK(terminated_walker_num == walker_num);
         solver->walk_info();
     });
+
+    if (walk_dump_file) {
+        walk_dump_file->flush();
+        CHECK(!walk_dump_file->fail()) << "Failed when writing walk dump file: " << dump_walks_path;
+    }
+
     solver->dealloc_output_array(walks);
 }

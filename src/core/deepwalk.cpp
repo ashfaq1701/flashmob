@@ -19,6 +19,6 @@ int main(int argc, char** argv)
     make_graph(opt.graph_path.c_str(), opt.graph_format, true, opt.get_walker_num_func(), opt.walk_len, opt.mtcfg, opt.mem_quota, false, graph);
 
     FMobSolver solver(&graph, opt.mtcfg);
-    walk(&solver, opt.get_walker_num(graph.v_num), opt.walk_len, opt.mem_quota);
+    walk(&solver, opt.get_walker_num(graph.v_num), opt.walk_len, opt.mem_quota, opt.dump_walks_path);
     return 0;
 }
